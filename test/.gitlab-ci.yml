@@ -1,0 +1,15 @@
+variables:
+  FOO: foo variable
+  FAR: far variable
+
+build.job:
+  stage: build
+  tags:
+    - env-shell
+  variables:
+    BAZ: $FOO variable
+    BOO: boo variable
+  script:
+    - echo hello world!
+    - echo $BAZ
+    - echo $FOO

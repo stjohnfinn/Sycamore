@@ -1,0 +1,77 @@
+image: gcc
+
+stages:
+  - build
+  - test
+  - deploy
+
+build:linux:
+  stage: build
+  tags:
+    - linux
+  before_script:
+    - apt update && apt -y install make autoconf cmake doxygen
+  script:
+    - cd build
+    - cmake ..
+    - make
+  artifacts:
+    expire_in: 2 hrs
+    paths:
+      - build/
+
+build:windows:
+  stage: build
+  tags:
+    - windows
+  script:
+    - cd build
+    - '"C:\Program Files\CMake\bin\cmake.exe" -G "Visual Studio 15 2017 Win64" -DBUILD_LIBTIFF=ON ..'
+    - '"C:\Program Files\CMake\bin\cmake.exe" ..'
+    - '"C:\Program Files\CMake\bin\cmake.exe" --build . --config Release --target ALL_BUILD'
+  artifacts:
+    expire_in: 2 hrs
+    paths:
+      - build/
+
+# Run unit test
+test:linux:
+  stage: test
+  tags:
+    - linux
+  script:
+    - ./build/test/unit_test
+  dependencies:
+    - build:linux
+
+# Build and Push Docker Image
+build:docker:
+  stage: deploy
+  when: on_success
+  only:
+    - master
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE .
+    - docker push $CI_REGISTRY_IMAGE
+  dependencies:
+    - build:linux
+
+# Generate and publish documentation to Gitlab pages
+pages:
+  stage: deploy
+  tags:
+    - linux
+  only:
+    - master
+  before_script:
+    - apt update && apt -y install doxygen
+  script:
+    - doxygen Doxyfile
+    - mv docs/html/ public/
+  artifacts:
+    paths:
+      - public
