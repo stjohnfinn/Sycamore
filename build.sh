@@ -2,7 +2,7 @@
 
 # minify the script
 
-./minify.sh sycamore.sh
+bash ./minify.sh sycamore.sh
 
 # rename to min
 
