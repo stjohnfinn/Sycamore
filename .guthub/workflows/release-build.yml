@@ -2,13 +2,25 @@ name: Release Build
 
 on:
   release:
-    types: [created]  # Trigger on release creation
+    types: [created]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug Information
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Triggered by: ${{ github.event.action }}"
+
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Needed to upload to releases
+      contents: write
     
     steps:
       - uses: actions/checkout@v4
@@ -18,29 +30,8 @@ jobs:
       
       - name: Run build script
         run: ./build.sh
-
-      - name: Verify minified script exists
-        run: |
-          if [ ! -f "sycamore.min.sh" ]; then
-            echo "sycamore.min.sh was not generated"
-            exit 1
-          fi
-
-      - name: Get tag name
-        if: github.event_name == 'push'
-        run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
       
-      - name: Upload minified script (on tag)
-        if: github.event_name == 'push'
+      - name: Upload minified script
         uses: softprops/action-gh-release@v1
         with:
           files: sycamore.min.sh
-          tag_name: ${{ env.RELEASE_TAG }}
-          generate_release_notes: true
-      
-      - name: Upload minified script (on release)
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: sycamore.min.sh
-          tag_name: ${{ github.event.release.tag_name }}
