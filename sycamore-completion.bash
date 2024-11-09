@@ -35,7 +35,7 @@ _sycamore_completions() {
   case "$prev" in
     -f|-p|--pipeline-file)
     # shellcheck disable=SC2207
-      COMPREPLY=($(compgen -f -- "$cur" | xargs -I {} bash -c '[[ -f "{}" ]] && echo "{}"'))
+      COMPREPLY=($(compgen -A file -- "$cur"))
       return 0
       ;;
   esac
