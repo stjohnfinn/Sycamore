@@ -110,10 +110,10 @@ main() {
 
   # shellcheck disable=SC2129
   printf "# Global variables\n" >> "$GENERATED_SCRIPT"
-  yq eval -o=json ".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "\(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
+  yq eval -o=json ".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "export \(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
   echo "" >> "$GENERATED_SCRIPT"
   printf "# Job variables\n" >> "$GENERATED_SCRIPT"
-  yq eval -o=json ".\"$pipeline_job_name\".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "\(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
+  yq eval -o=json ".\"$pipeline_job_name\".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "export \(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
   echo "" >> "$GENERATED_SCRIPT"
   printf "# Job script\n" >> "$GENERATED_SCRIPT"
   yq eval ".\"$pipeline_job_name\".script[]" "$pipeline_file" >> "$GENERATED_SCRIPT"
