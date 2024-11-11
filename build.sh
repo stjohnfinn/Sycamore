@@ -10,7 +10,7 @@ mv sycamore.sh.tmp sycamore.min.sh
 
 # minify the autocomplete script
 
-bash ./minify sycamore-completion.bash
+bash ./minify.sh sycamore-completion.bash
 
 # rename to min
 
