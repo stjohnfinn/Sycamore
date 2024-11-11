@@ -18,5 +18,9 @@ test-job:
   stage: build
   tags:
     - dummy-tag
+  before_script:
+    - echo before script stuff!!
   script:
     - echo test job
+  after_script:
+    - echo what the heckkk
