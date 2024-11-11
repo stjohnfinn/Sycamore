@@ -28,6 +28,17 @@ This script does not support any of the following actions right now:
 I just need this for work on monday, so I don't really want to extend it more 
 than I have to.
 
+## Installation
+
+1. Copy the script to somewhere in your `$PATH`.
+
+    mkdir -p $HOME/.local/bin
+    install -m 755 ./sycamore.min.sh ~/.local/bin
+
+1. Add the autocomplete file.
+
+    install -m 644 ./sycamore-completion.min.bash /etc/bash_completion.d/
+
 ## Todo
 
 Turn this into a Golang project or Python project.

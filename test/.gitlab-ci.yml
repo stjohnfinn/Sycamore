@@ -13,3 +13,10 @@ build.job:
     - echo hello world!
     - echo $BAZ
     - echo $FOO
+
+test-job:
+  stage: build
+  tags:
+    - dummy-tag
+  script:
+    - echo test job
