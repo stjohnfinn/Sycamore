@@ -12,18 +12,25 @@ readonly GENERATED_SCRIPT
 SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
 readonly SCRIPT_NAME
 
+# Check if yq is installed
+if ! command -v yq &> /dev/null; then
+    echo "Error: yq is required but not installed" >&2
+    exit 1
+fi
+
 usage() {
   cat << EOF
-Usage: ${SCRIPT_NAME} pipeline_job_name [--help] [--version] [--run]
+Usage: ${SCRIPT_NAME} pipeline_job_name [ARGUMENTS]
 
-Run a pipeline job with the specified name.
+Run a pipeline job with the specified name. Script must be called with at least 
+the '--job-name' flag.
 
 Options:
-    --job JOB             Job to be converted to shell script
-    --pipeline-file FILE  Path to the pipeline configuration file (default: .gitlab-ci.yml)
-    --run                 Execute the pipeline job after generating script
-    --help                Show this help message and exit
-    --version             Show version information and exit
+    -j,--job JOB                Job to be converted to shell script
+    -p,-f,--pipeline-file FILE  Path to the pipeline configuration file (default: .gitlab-ci.yml)
+    -r,--run                    Execute the pipeline job after generating script
+    -h,--help                   Show this help message and exit
+    -v,--version                Show version information and exit
 EOF
 }
 
@@ -93,7 +100,7 @@ main() {
   fi
 
   if [[ ! -f "$pipeline_file" ]]; then
-    die "$pipeline_file not found."
+    die "$pipeline_file not found"
   fi
 
   if [[ "$(yq eval ".\"$pipeline_job_name\"" "$pipeline_file")" == "null" ]]; then
@@ -105,19 +112,56 @@ main() {
   touch "$GENERATED_SCRIPT"
   # shebang
   echo -e "#!/usr/bin/env bash\n" >> "$GENERATED_SCRIPT"
+  echo -e "set -eou pipefail\n" >> "$GENERATED_SCRIPT"
 
   printf "Job: %s (pipeline file: %s)\n" "$pipeline_job_name" "$pipeline_file"
 
+  ###################
+  # Global variables
+  ###################
   # shellcheck disable=SC2129
   printf "# Global variables\n" >> "$GENERATED_SCRIPT"
   yq eval -o=json ".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "export \(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
   echo "" >> "$GENERATED_SCRIPT"
-  printf "# Job variables\n" >> "$GENERATED_SCRIPT"
-  yq eval -o=json ".\"$pipeline_job_name\".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "export \(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
-  echo "" >> "$GENERATED_SCRIPT"
-  printf "# Job script\n" >> "$GENERATED_SCRIPT"
-  yq eval ".\"$pipeline_job_name\".script[]" "$pipeline_file" >> "$GENERATED_SCRIPT"
-  echo "" >> "$GENERATED_SCRIPT"
+
+  ###################
+  # Job variables
+  ###################
+
+  if yq -e ".\"$pipeline_job_name\".variables" "$pipeline_file" &> /dev/null; then
+    printf "# Job variables\n" >> "$GENERATED_SCRIPT"
+    yq eval -o=json ".\"$pipeline_job_name\".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "export \(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
+    echo "" >> "$GENERATED_SCRIPT"
+  fi
+
+
+  ###################
+  # before_script
+  ###################
+  if yq -e ".\"$pipeline_job_name\".before_script" "$pipeline_file" &> /dev/null; then
+    printf "# Job before script\n" >> "$GENERATED_SCRIPT"
+    yq eval ".\"$pipeline_job_name\".before_script[]" "$pipeline_file" >> "$GENERATED_SCRIPT"
+    echo "" >> "$GENERATED_SCRIPT"
+  fi
+  
+
+  ###################
+  # script
+  ###################
+  if yq -e ".\"$pipeline_job_name\".script" "$pipeline_file" &> /dev/null; then
+    printf "# Job script\n" >> "$GENERATED_SCRIPT"
+    yq eval ".\"$pipeline_job_name\".script[]" "$pipeline_file" >> "$GENERATED_SCRIPT"
+    echo "" >> "$GENERATED_SCRIPT"
+  fi
+
+  ###################
+  # after_script
+  ###################
+  if yq -e ".\"$pipeline_job_name\".after_script" "$pipeline_file" &> /dev/null; then
+    printf "# Job after script\n" >> "$GENERATED_SCRIPT"
+    yq eval ".\"$pipeline_job_name\".after_script[]" "$pipeline_file" >> "$GENERATED_SCRIPT"
+    echo "" >> "$GENERATED_SCRIPT"
+  fi
 
   if [[ "$run" == 1 ]]; then
     echo "Running the script..."
