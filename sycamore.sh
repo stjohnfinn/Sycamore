@@ -94,7 +94,7 @@ main() {
   fi
 
   if [[ ! -f "$pipeline_file" ]]; then
-    die "$pipeline_file not found."
+    die "$pipeline_file not found"
   fi
 
   if [[ "$(yq eval ".\"$pipeline_job_name\"" "$pipeline_file")" == "null" ]]; then
