@@ -31,6 +31,7 @@ Options:
     -r,--run                    Execute the pipeline job after generating script
     -h,--help                   Show this help message and exit
     -v,--version                Show version information and exit
+    -s, --show                  Output the contents to STDOUT instead of file
 EOF
 }
 
@@ -131,6 +132,20 @@ main() {
 
   if yq -e ".\"$pipeline_job_name\".variables" "$pipeline_file" &> /dev/null; then
     printf "# Job variables\n" >> "$GENERATED_SCRIPT"
+    
+    if yq -e ".\"$pipeline_job_name\".variables" "$pipeline_file" &> /dev/null; then
+      extends_list=$(yq -e -o=tsv ".\"$pipeline_job_name\".extends" "$pipeline_file")
+
+      for extended_job in $extends_list; do
+        [ -z "$extended_job" ] && continue
+
+        if yq -e "has(\"$extended_job\")" "$pipeline_file" > /dev/null 2>&1; then
+          yq eval -o=json ".\"$extended_job\".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "export \(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
+        fi
+      done
+    fi
+
+
     yq eval -o=json ".\"$pipeline_job_name\".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "export \(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
     echo "" >> "$GENERATED_SCRIPT"
   fi

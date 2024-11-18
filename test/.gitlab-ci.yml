@@ -1,9 +1,19 @@
+include:
+  - local: test/Template.gitlab-ci.yml
+
 variables:
   FOO: foo variable
   FAR: far variable
 
+.template-job:
+  variables:
+    INHERITED_VARIABLE: be more nonchalant lil bro
+
 build.job:
   stage: build
+  extends:
+    - .template-job
+    - .otherfile-job
   tags:
     - env-shell
   variables:

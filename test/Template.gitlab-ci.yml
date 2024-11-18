@@ -1,0 +1,3 @@
+.otherfile-job:
+  variables:
+    OTHER_FILE_VAR: foober
