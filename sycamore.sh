@@ -31,7 +31,6 @@ Options:
     -r,--run                    Execute the pipeline job after generating script
     -h,--help                   Show this help message and exit
     -v,--version                Show version information and exit
-    -s, --show                  Output the contents to STDOUT instead of file
 EOF
 }
 
