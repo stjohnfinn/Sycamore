@@ -18,6 +18,7 @@ build.job:
     - env-shell
   variables:
     BAZ: $FOO variable
+    PKR_VAR_vm_name: $CI_PROJECT_NAME-$CI_PIPELINE_ID.ova
     BOO: boo variable
   script:
     - echo hello world!
