@@ -132,7 +132,7 @@ main() {
   if yq -e ".\"$pipeline_job_name\".variables" "$pipeline_file" &> /dev/null; then
     printf "# Job variables\n" >> "$GENERATED_SCRIPT"
     
-    if yq -e ".\"$pipeline_job_name\".variables" "$pipeline_file" &> /dev/null; then
+    if yq -e ".\"$pipeline_job_name\".extends" "$pipeline_file" &> /dev/null; then
       extends_list=$(yq -e -o=tsv ".\"$pipeline_job_name\".extends" "$pipeline_file")
 
       for extended_job in $extends_list; do
