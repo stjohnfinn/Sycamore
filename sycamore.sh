@@ -7,7 +7,7 @@ set -o pipefail
 set -eu
 
 readonly VERSION="1.1.0"
-GENERATED_SCRIPT="sycamore_$(date +%Y%m%d_%H%M%S).sh"
+GENERATED_SCRIPT="sycamore_gen_$(date +%Y%m%d_%H%M%S).sh"
 readonly GENERATED_SCRIPT
 INTERMEDIATE_FILE=$(mktemp)
 readonly INTERMEDIATE_FILE
@@ -86,6 +86,7 @@ main() {
   ##############################################################################
   # MAIN LOGIC FOR PARSING PIPELINES HERE
   ##############################################################################
+
   # Some error handling
   if [[ -z "$pipeline_job_name" ]]; then
     die "needs --job flag (and a value)"
@@ -104,13 +105,17 @@ main() {
   fi
 
   # Ok now start creating the shell script
-
   touch "$GENERATED_SCRIPT"
-  # shebang
-  echo -e "#!/usr/bin/env bash\n" >> "$GENERATED_SCRIPT"
-  echo -e "set -eou pipefail\n" >> "$GENERATED_SCRIPT"
 
   printf "Job: %s (pipeline file: %s)\n" "$pipeline_job_name" "$pipeline_file"
+  echo "Creating $GENERATED_SCRIPT."
+
+  # shebang
+  echo -e "#!/usr/bin/env bash\n" >> "$GENERATED_SCRIPT"
+
+  # options so that if they `source` the file with unset variables it fails
+  # INTENDED & TESTED WITH BASH ONLY
+  echo -e "set -u\n" >> "$GENERATED_SCRIPT"
 
   ###################
   # Global variables
