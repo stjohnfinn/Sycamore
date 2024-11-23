@@ -6,9 +6,11 @@ set -o nounset
 set -o pipefail
 set -eu
 
-readonly VERSION="1.0.0"
+readonly VERSION="1.1.0"
 GENERATED_SCRIPT="sycamore_$(date +%Y%m%d_%H%M%S).sh"
 readonly GENERATED_SCRIPT
+INTERMEDIATE_FILE=$(mktemp)
+readonly INTERMEDIATE_FILE
 SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
 readonly SCRIPT_NAME
 
@@ -22,13 +24,12 @@ usage() {
   cat << EOF
 Usage: ${SCRIPT_NAME} pipeline_job_name [ARGUMENTS]
 
-Run a pipeline job with the specified name. Script must be called with at least 
-the '--job-name' flag.
+Parse a pipeline job with the specified name. You must provide at least the 
+'--job-name' flag.
 
 Options:
     -j,--job JOB                Job to be converted to shell script
     -p,-f,--pipeline-file FILE  Path to the pipeline configuration file (default: .gitlab-ci.yml)
-    -r,--run                    Execute the pipeline job after generating script
     -h,--help                   Show this help message and exit
     -v,--version                Show version information and exit
 EOF
@@ -48,7 +49,6 @@ main() {
   fi
 
   # Initialize variables before processing flags
-  local run=0
   local pipeline_file=".gitlab-ci.yml"
   local pipeline_job_name=""
 
@@ -62,10 +62,6 @@ main() {
       -v|--version|--veresion)
         printf "%s version %s\n" "$SCRIPT_NAME" "$VERSION"
         exit 0
-        ;;
-      -r|--run)
-        run=1
-        shift
         ;;
       -p|-f|--pipeline-file)
         if [ $# -lt 2 ]; then
@@ -147,58 +143,6 @@ main() {
 
     yq eval -o=json ".\"$pipeline_job_name\".variables" "$pipeline_file" | jq -r 'to_entries | .[] | "export \(.key)=\"\(.value)\""' >> "$GENERATED_SCRIPT"
     echo "" >> "$GENERATED_SCRIPT"
-  fi
-
-
-  ###################
-  # before_script
-  ###################
-  if yq -e ".\"$pipeline_job_name\".before_script" "$pipeline_file" &> /dev/null; then
-    printf "# Job before script\n" >> "$GENERATED_SCRIPT"
-    yq eval ".\"$pipeline_job_name\".before_script[]" "$pipeline_file" >> "$GENERATED_SCRIPT"
-    echo "" >> "$GENERATED_SCRIPT"
-  fi
-  
-
-  ###################
-  # script
-  ###################
-  if yq -e ".\"$pipeline_job_name\".script" "$pipeline_file" &> /dev/null; then
-    printf "# Job script\n" >> "$GENERATED_SCRIPT"
-    yq eval ".\"$pipeline_job_name\".script[]" "$pipeline_file" >> "$GENERATED_SCRIPT"
-    echo "" >> "$GENERATED_SCRIPT"
-  fi
-
-  ###################
-  # after_script
-  ###################
-  if yq -e ".\"$pipeline_job_name\".after_script" "$pipeline_file" &> /dev/null; then
-    printf "# Job after script\n" >> "$GENERATED_SCRIPT"
-    yq eval ".\"$pipeline_job_name\".after_script[]" "$pipeline_file" >> "$GENERATED_SCRIPT"
-    echo "" >> "$GENERATED_SCRIPT"
-  fi
-
-  if [[ "$run" == 1 ]]; then
-    echo "Running the script..."
-
-    while IFS= read -r line; do
-      if [[ -z "$line" ]]; then
-        continue
-      fi
-
-      if [[ ${line:0:1} == "#" ]]; then
-        continue
-      fi
-
-      echo "Running \"$line\" in 3 seconds."
-      sleep 3
-
-      eval "$line"
-
-      sleep 1
-    done < "$GENERATED_SCRIPT"
-
-    rm -f "$GENERATED_SCRIPT"
   fi
 }
 
