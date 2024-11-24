@@ -60,23 +60,23 @@ pushd test &>/dev/null || exit 1
 
 validation_test \
   "job name as a dot" \
-  "$CMD --pipeline-file test/.gitlab-ci.yml --job . --remove"
+  "$CMD --pipeline-file .gitlab-ci.yml --job . --remove"
 
 validation_test \
   "pipeline file doesn't exist" \
-  "$CMD --pipeline-file test/.gitlab-ci.yml.noexist --job job-name --remove"
+  "$CMD --pipeline-file .gitlab-ci.yml.noexist --job job-name --remove"
 
 validation_test \
   "job doesn't exist" \
-  "$CMD --pipeline-file test/.gitlab-ci.yml --job invalid-job-name --remove"
+  "$CMD --pipeline-file .gitlab-ci.yml --job invalid-job-name --remove"
 
 validation_test \
   "called without job name flag" \
-  "$CMD --pipeline-file test/.gitlab-ci.yml --remove"
+  "$CMD --pipeline-file .gitlab-ci.yml --remove"
 
 validation_test \
   "output file already exists" \
-  "$CMD --pipeline-file test/.gitlab-ci.yml --remove --output .gitlab-ci.yml"
+  "$CMD --pipeline-file .gitlab-ci.yml --job build.job --remove --output .gitlab-ci.yml"
 
 ################################################################################
 # Basic tests
