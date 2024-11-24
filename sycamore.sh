@@ -8,7 +8,7 @@ set -eu
 
 SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
 readonly SCRIPT_NAME
-readonly VERSION="1.1.0"
+readonly VERSION="1.2.0"
 GENERATED_SCRIPT="sycamore_gen_$(date +%Y%m%d_%H%M%S).sh"
 
 # Check if yq is installed
