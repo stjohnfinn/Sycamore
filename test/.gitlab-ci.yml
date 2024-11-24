@@ -9,11 +9,16 @@ variables:
   variables:
     INHERITED_VARIABLE: be more nonchalant lil bro
 
+.other-template-job:
+  variables:
+    WTF: what the fudge
+
 build.job:
   stage: build
   extends:
     - .template-job
     - .otherfile-job
+    - .other-template-job
   tags:
     - env-shell
   variables:
