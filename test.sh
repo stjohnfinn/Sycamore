@@ -14,7 +14,7 @@ validation_test() {
   local name=$1
   local command=$2
 
-  if ! $command > /dev/null 2>&1; then
+  if ! $command; then
     echo -e "${GREEN}$name: test passed!${RESET}"
     rm -f "$output_file"
   else
