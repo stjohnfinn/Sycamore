@@ -21,12 +21,12 @@ Parse the `build-job` pipeline job from the file
 
 1. Copy the script to somewhere in your `$PATH`.
 
-    mkdir -p $HOME/.local/bin
-    install -m 755 ./sycamore.min.sh ~/.local/bin
+       mkdir -p $HOME/.local/bin
+       install -m 755 ./sycamore.min.sh ~/.local/bin
 
 1. Add the autocomplete file.
 
-    install -m 644 ./sycamore-completion.min.bash /etc/bash_completion.d/
+       install -m 644 ./sycamore-completion.min.bash /etc/bash_completion.d/
 
 ## Build
 
