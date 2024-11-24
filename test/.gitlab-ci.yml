@@ -9,15 +9,21 @@ variables:
   variables:
     INHERITED_VARIABLE: be more nonchalant lil bro
 
+.other-template-job:
+  variables:
+    WTF: what the fudge
+
 build.job:
   stage: build
   extends:
     - .template-job
     - .otherfile-job
+    - .other-template-job
   tags:
     - env-shell
   variables:
     BAZ: $FOO variable
+    PKR_VAR_vm_name: $CI_PROJECT_NAME-$CI_PIPELINE_ID.ova
     BOO: boo variable
   script:
     - echo hello world!

@@ -14,6 +14,15 @@ jobs:
           echo "Ref: ${{ github.ref }}"
           echo "Triggered by: ${{ github.event.action }}"
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make test script executable
+        run: chmod +x ./test.sh
+
+      - name: Run test script
+        run: ./test.sh
+
   build:
     runs-on: ubuntu-latest
     permissions:
