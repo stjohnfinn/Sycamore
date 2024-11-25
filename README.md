@@ -25,8 +25,11 @@ Parse the `build-job` pipeline job from the file
        install -m 755 ./sycamore.min.sh ~/.local/bin
 
 1. Add the autocomplete file.
-
+    For the entire machine:
        install -m 644 ./sycamore-completion.min.bash /etc/bash_completion.d/
+    For just you:
+       mkdir ~/.bash_completion.d/
+
 
 ## Build
 
