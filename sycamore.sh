@@ -173,6 +173,10 @@ main() {
   if $remove_when_finished; then
     rm -f "$GENERATED_SCRIPT"
   fi
+
+  if ! $remove_when_finished; then
+    echo -e "set +u\n" >> "$GENERATED_SCRIPT"
+  fi
 }
 
 main "$@"
